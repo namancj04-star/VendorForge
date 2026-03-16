@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VendorForge — Find. Track. Close.</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg2: #111111;
+  --bg3: #1a1a1a;
+  --bg4: #222222;
+  --border: #2a2a2a;
+  --border2: #333333;
+  --text: #f0ede8;
+  --text2: #a09d98;
+  --text3: #5a5754;
+  --accent: #e8ff47;
+  --accent2: #b8cc30;
+  --accent-dim: rgba(232,255,71,0.08);
+  --accent-dim2: rgba(232,255,71,0.15);
+  --red: #ff4f4f;
+  --red-bg: rgba(255,79,79,0.08);
+  --green: #4fffb0;
+  --green-bg: rgba(79,255,176,0.08);
+  --blue: #47b4ff;
+  --blue-bg: rgba(71,180,255,0.08);
+  --orange: #ffb347;
+  --orange-bg: rgba(255,179,71,0.08);
+  --r: 8px;
+  --r2: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  overflow-x: hidden;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+/* ── HEADER ── */
+header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px);
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logo-mark {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #0a0a0a;
+  font-weight: 800;
+}
+
+.logo-text { color: var(--text); }
+.logo-sub { color: var(--text3); font-weight: 400; font-size: 13px; margin-left: 4px; font-family: 'JetBrains Mono', monospace; }
+
+.ollama-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.ollama-status:hover { border-color: var(--border2); }
+
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); }
+.status-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.status-dot.offline { background: var(--red); }
+
+/* ── LAYOUT ── */
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 60px); }
+
+/* ── SIDEBAR ── */
+aside {
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 60px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.nav-section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  padding: 0 16px 8px;
+  margin-top: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  border-left: 2px solid transparent;
+  font-family: 'Syne', sans-serif;
+}
+
+.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-dim); }
+
+.nav-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.sidebar-divider { height: 1px; background: var(--border); margin: 12px 16px; }
+
+.brand-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: 0.15s;
+  border-left: 2px solid transparent;
+}
+.brand-item:hover { background: var(--bg3); }
+.brand-item.active { border-left-color: var(--accent); background: var(--accent-dim); }
+
+.brand-avatar {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.brand-name { font-size: 12px; color: var(--text); flex: 1; margin-left: 8px; font-weight: 500; }
+.brand-count { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); }
+
+.add-brand-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+  transition: 0.15s;
+  font-family: 'Syne', sans-serif;
+  margin-top: 4px;
+}
+.add-brand-btn:hover { color: var(--accent); }
+
+/* ── MAIN ── */
+main { overflow-y: auto; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── HERO (DASHBOARD) ── */
+.hero {
+  padding: 48px 36px 32px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: 'VENDOR\AFORGE';
+  white-space: pre;
+  position: absolute;
+  right: -20px;
+  top: -10px;
+  font-size: 140px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.02);
+  line-height: 0.85;
+  pointer-events: none;
+  letter-spacing: -8px;
+}
+
+.hero-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 52px;
+  line-height: 1;
+  letter-spacing: -2px;
+  margin-bottom: 16px;
+  max-width: 600px;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-desc {
+  font-size: 15px;
+  color: var(--text2);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.hero-stats {
+  display: flex;
+  gap: 0;
+  margin-top: 40px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.hero-stat {
+  flex: 1;
+  padding-right: 32px;
+  border-right: 1px solid var(--border);
+  margin-right: 32px;
+}
+.hero-stat:last-child { border-right: none; }
+
+.hero-stat-num {
+  font-family: 'Instrument Serif', serif;
+  font-size: 40px;
+  line-height: 1;
+  color: var(--text);
+  letter-spacing: -1px;
+}
+
+.hero-stat-label {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── HOW IT WORKS ── */
+.how-section {
+  padding: 32px 36px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+
+.how-step {
+  background: var(--bg);
+  padding: 20px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.how-step:hover { background: var(--bg3); }
+
+.how-step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.how-step-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.how-step-desc { font-size: 12px; color: var(--text3); line-height: 1.6; }
+
+/* ── SECTION CONTENT ── */
+.section-content { padding: 32px 36px; }
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+
+.page-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 36px;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.5;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  font-family: 'Syne', sans-serif;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.btn-accent { background: var(--accent); color: #0a0a0a; }
+.btn-accent:hover { background: #d4eb30; transform: translateY(-1px); }
+
+.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border2); }
+.btn-outline:hover { border-color: var(--text2); background: var(--bg3); }
+
+.btn-ghost { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg4); color: var(--text); }
+
+.btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid rgba(255,79,79,0.2); }
+.btn-danger:hover { background: rgba(255,79,79,0.15); }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 20px;
+}
+
+/* ── INPUTS ── */
+input, textarea, select {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg3);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+input::placeholder, textarea::placeholder { color: var(--text3); }
+select option { background: var(--bg3); }
+
+label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: block;
+  margin-bottom: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.form-group { margin-bottom: 14px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ── VENDOR TABLE ── */
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+  text-align: left;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+tbody tr:hover { background: var(--bg3); }
+tbody tr:last-child { border-bottom: none; }
+
+td { padding: 12px 14px; vertical-align: middle; }
+
+.vendor-name-cell { font-weight: 600; font-size: 14px; color: var(--text); }
+.vendor-email-cell { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+.badge-orange { background: var(--orange-bg); color: var(--orange); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-gray { background: var(--bg4); color: var(--text3); border: 1px solid var(--border); }
+.badge-accent { background: var(--accent-dim); color: var(--accent); }
+
+/* ── VENDOR CONTROLS ── */
+.vendor-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-wrap { position: relative; flex: 1; min-width: 200px; }
+.search-wrap input { padding-left: 36px; }
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.filter-select { width: auto; min-width: 130px; }
+
+/* ── DISCOVER ── */
+.discover-hero {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 28px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.discover-hero::after {
+  content: '⊕';
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  font-size: 120px;
+  color: rgba(232,255,71,0.04);
+  pointer-events: none;
+}
+
+.discover-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 160px auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 20px;
+}
+
+.result-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+  animation: slideUp 0.3s ease both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.result-card:hover { border-color: var(--border2); }
+.result-card.added { border-color: var(--green); background: rgba(79,255,176,0.03); }
+
+.result-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.result-meta { font-size: 12px; color: var(--text3); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+.result-note { font-size: 13px; color: var(--text2); margin-top: 5px; }
+
+/* ── SHORTLIST FILTERS ── */
+.filter-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.range-row { display: flex; align-items: center; gap: 8px; }
+.range-row input { text-align: center; }
+
+/* ── EMAIL ── */
+.email-preview {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text2);
+  white-space: pre-wrap;
+  min-height: 160px;
+  font-family: 'Syne', sans-serif;
+}
+
+.email-subject-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  padding: 8px 12px;
+  background: var(--bg4);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 32px;
+  width: 560px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.modal-title { font-family: 'Instrument Serif', serif; font-size: 26px; letter-spacing: -0.5px; }
+.modal-close { background: var(--bg4); border: 1px solid var(--border); color: var(--text2); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { color: var(--text); }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* ── SPINNER ── */
+.spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(10,10,10,0.3);
+  border-top-color: #0a0a0a;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.spinner-light {
+  border-color: rgba(160,157,152,0.2);
+  border-top-color: var(--text2);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── LOADING STATE ── */
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--text3);
+}
+
+.empty-glyph {
+  font-size: 56px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty h3 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 24px;
+  color: var(--text2);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.empty p { font-size: 13px; max-width: 300px; margin: 0 auto 20px; line-height: 1.6; }
+
+/* ── OLLAMA SETUP ── */
+.ollama-banner {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r2);
+  padding: 24px;
+  margin-bottom: 28px;
+}
+
+.ollama-banner h2 {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+
+.ollama-banner p { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 16px; }
+
+.code-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: 0.15s;
+  flex-shrink: 0;
+}
+.copy-btn:hover { color: var(--accent); background: var(--accent-dim); }
+
+.steps-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+
+.mini-step {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+}
+
+.mini-step-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 6px; letter-spacing: 1px; }
+.mini-step-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.mini-step-desc { font-size: 11px; color: var(--text3); line-height: 1.5; }
+
+/* ── MODEL SELECTOR ── */
+.model-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 12px 18px;
+  border-radius: var(--r);
+  font-size: 13px;
+  z-index: 999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-left: 3px solid var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  max-width: 320px;
+}
+#toast.show { transform: none; opacity: 1; }
+
+/* ── SHORTLIST ROW HIGHLIGHT ── */
+tr.shortlisted td:first-child { border-left: 2px solid var(--accent); }
+
+/* ── SETTINGS PAGE ── */
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.feature-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  padding: 20px;
+}
+.feature-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.feature-card p { font-size: 12px; color: var(--text3); line-height: 1.6; }
+
+/* ── RECENT TABLE ── */
+.recent-section { padding: 0 36px 36px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">V</div>
+    <span class="logo-text">VendorForge</span>
+    <span class="logo-sub">/ sourcing OS</span>
+  </div>
+  <div class="ollama-status" onclick="checkOllama()" title="Click to test connection">
+    <div class="status-dot" id="ollamaDot"></div>
+    <span id="ollamaStatusText">checking ollama…</span>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside>
+    <div class="nav-section-label">Navigate</div>
+    <button class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">◈</span> Home
+    </button>
+    <button class="nav-item" onclick="showPage('discover')">
+      <span class="nav-icon">⊕</span> Discover
+    </button>
+    <button class="nav-item" onclick="showPage('vendors')">
+      <span class="nav-icon">▤</span> All Vendors
+    </button>
+    <button class="nav-item" onclick="showPage('shortlist')">
+      <span class="nav-icon">★</span> Shortlist
+    </button>
+    <button class="nav-item" onclick="showPage('settings')">
+      <span class="nav-icon">⚙</span> Settings
+    </button>
+
+    <div class="sidebar-divider"></div>
+    <div class="nav-section-label">Your Brands</div>
+    <div id="brandList"></div>
+    <button class="add-brand-btn" onclick="openModal('addBrandModal')">
+      + New Brand
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="hero">
+        <div class="hero-eyebrow">// YOUR SOURCING COMMAND CENTER</div>
+        <h1 class="hero-title">Turn ideas into<br/><em>real products</em></h1>
+        <p class="hero-desc">
+          You've got the brand vision. VendorForge finds the manufacturers, tracks every conversation, and writes your outreach emails — all powered by <strong style="color:var(--accent)">free local AI</strong> running on your own machine. No subscriptions. No limits.
+        </p>
+        <div class="hero-actions">
+          <button class="btn btn-accent" onclick="showPage('discover')">⊕ Find Vendors Now</button>
+          <button class="btn btn-outline" onclick="openModal('addBrandModal')">+ Create a Brand</button>
+          <button class="btn btn-ghost" onclick="showPage('settings')">⚙ Setup Ollama AI</button>
+        </div>
+        <div class="hero-stats" id="heroStats"></div>
+      </div>
+
+      <div class="how-section">
+        <div class="section-label">// how it works — 4 steps</div>
+        <div class="how-grid">
+          <div class="how-step" onclick="showPage('discover')">
+            <div class="how-step-num">01 / DISCOVER</div>
+            <div class="how-step-title">Tell us what you're building</div>
+            <div class="how-step-desc">Type "blank t-shirts India" or "leather sneakers Turkey" — the AI searches the web and surfaces real manufacturers in seconds.</div>
+          </div>
+          <div class="how-step" onclick="showPage('vendors')">
+            <div class="how-step-num">02 / TRACK</div>
+            <div class="how-step-title">Save vendors to your pipeline</div>
+            <div class="how-step-desc">Add any vendor with one click. Log their MOQ, location, pricing and notes. Filter by status: new, shortlisted, contacted, rejected.</div>
+          </div>
+          <div class="how-step" onclick="showPage('shortlist')">
+            <div class="how-step-num">03 / SHORTLIST</div>
+            <div class="how-step-title">Filter by what matters to you</div>
+            <div class="how-step-desc">Set your MOQ range, location preference, product category. The smart filter scores and ranks vendors against your requirements.</div>
+          </div>
+          <div class="how-step">
+            <div class="how-step-num">04 / OUTREACH</div>
+            <div class="how-step-title">AI writes your pitch emails</div>
+            <div class="how-step-desc">One click → a professional outreach email drafted by your local AI, tailored to the vendor's product and your brand story. Opens straight in Gmail.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-top:28px;">
+          <div class="section-label" style="margin:0;">// recently added vendors</div>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('vendors')">View all →</button>
+        </div>
+        <div id="recentVendors"></div>
+      </div>
+    </div>
+
+    <!-- ══ DISCOVER ══ -->
+    <div class="page" id="page-discover">
+      <div class="section-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Discover Vendors</h1>
+            <p class="page-subtitle">// AI scans the web · returns real manufacturers · you pick the best</p>
+          </div>
+        </div>
+
+        <div class="discover-hero">
+          <div class="section-label">// what are you sourcing?</div>
+          <p style="font-size:14px;color:var(--text2);line-height:1.6;max-width:580px;">
+            Be specific. <span style="color:var(--text)">"Heavyweight 100% cotton t-shirts India"</span> works better than just "t-shirts". Add a location to find regional manufacturers with better pricing and faster shipping.
+          </p>
+          <div class="discover-form">
+            <div class="form-group" style="margin:0;">
+              <label>Product / Material</label>
+              <input type="text" id="discProduct" placeholder="e.g. premium leather sneakers"/>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Country / Region</label>
+              <input type="text" id="discLocation" placeholder="e.g. India, China, Turkey"/>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Max MOQ (units)</label>
+              <input type="number" id="discMOQ" placeholder="e.g. 100"/>
+            </div>
+            <div style="padding-bottom:1px;">
+              <button class="btn btn-accent" onclick="discoverVendors()" id="discBtn" style="width:100%;justify-content:center;">
+                <span id="discBtnInner">⊕ Search</span>
+              </button>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;flex:1;min-width:160px;">
+              <label>Assign to Brand</label>
+              <select id="discBrand"><option value="">— No brand —</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="discResults"></div>
+      </div>
+    </div>
+
+    <!-- ══ ALL VENDORS ══ -->
+    <div class="page" id="page-vendors">
+      <div class="section-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">All Vendors</h1>
+            <p class="page-subtitle" id="vendorCountSub">// 0 vendors in your pipeline</p>
+          </div>
+          <button class="btn btn-accent" onclick="openAddVendorModal()">+ Add Manually</button>
+        </div>
+
+        <div class="vendor-controls">
+          <div class="search-wrap">
+            <span class="search-icon">⌕</span>
+            <input type="text" id="vendorSearch" placeholder="Search name, email, location…" oninput="renderVendorTable()"/>
+          </div>
+          <select class="filter-select" id="statusFilter" onchange="renderVendorTable()">
+            <option value="">All Status</option>
+            <option value="new">New</option>
+            <option value="shortlisted">Shortlisted</option>
+            <option value="contacted">Contacted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <select class="filter-select" id="catFilter" onchange="renderVendorTable()">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vendor</th>
+                  <th>Category</th>
+                  <th>Location</th>
+                  <th>MOQ</th>
+                  <th>Status</th>
+                  <th>Brand</th>
+                  <th style="width:180px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vendorTableBody"></tbody>
+            </table>
+          </div>
+          <div id="vendorTableEmpty" style="display:none;" class="empty">
+            <div class="empty-glyph">▤</div>
+            <h3>Pipeline is empty</h3>
+            <p>Use Discover to find manufacturers, or add a vendor manually.</p>
+            <button class="btn btn-accent" onclick="showPage('discover')">⊕ Find Vendors</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SHORTLIST ══ -->
+    <div class="page" id="page-shortlist">
+      <div class="section-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Shortlist</h1>
+            <p class="page-subtitle">// filter by your requirements · pick the best · hit send</p>
+          </div>
+          <button class="btn btn-accent" onclick="bulkEmail()" id="bulkBtn">✉ Email All Shortlisted</button>
+        </div>
+
+        <div class="filter-panel">
+          <div class="section-label" style="margin-bottom:14px;">// filter vendors</div>
+          <div class="filter-grid">
+            <div class="form-group" style="margin:0;">
+              <label>Category</label>
+              <select id="slCat" onchange="renderShortlist()"><option value="">All</option></select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Location contains</label>
+              <input type="text" id="slLoc" placeholder="e.g. India" oninput="renderShortlist()"/>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>MOQ range</label>
+              <div class="range-row">
+                <input type="number" id="slMOQMin" placeholder="Min" oninput="renderShortlist()"/>
+                <span style="color:var(--text3);font-size:11px;flex-shrink:0;">to</span>
+                <input type="number" id="slMOQMax" placeholder="Max" oninput="renderShortlist()"/>
+              </div>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Brand</label>
+              <select id="slBrand" onchange="renderShortlist()"><option value="">All brands</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="shortlistResults"></div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="page-settings">
+      <div class="section-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Settings</h1>
+            <p class="page-subtitle">// configure ollama · set your profile · manage data</p>
+          </div>
+        </div>
+
+        <!-- OLLAMA SETUP -->
+        <div class="ollama-banner" style="margin-bottom:24px;">
+          <h2>🤖 Free AI with Ollama</h2>
+          <p>VendorForge runs entirely on <strong style="color:var(--accent)">Ollama</strong> — free, open-source AI that runs locally on your Mac. No API keys, no monthly bills, no data sent to the cloud. Your vendor data stays 100% on your machine.</p>
+
+          <div class="steps-row">
+            <div class="mini-step">
+              <div class="mini-step-num">STEP 01</div>
+              <div class="mini-step-title">Install Ollama</div>
+              <div class="mini-step-desc">Download from ollama.com — it's a simple Mac app install, takes 2 minutes.</div>
+              <div class="code-block" style="margin-top:8px;">
+                <span>ollama.com/download</span>
+                <button class="copy-btn" onclick="copyText('https://ollama.com/download')">copy</button>
+              </div>
+            </div>
+            <div class="mini-step">
+              <div class="mini-step-num">STEP 02</div>
+              <div class="mini-step-title">Pull a model</div>
+              <div class="mini-step-desc">Open Terminal and run this command to download the AI model.</div>
+              <div class="code-block" style="margin-top:8px;">
+                <span>ollama pull llama3.2</span>
+                <button class="copy-btn" onclick="copyText('ollama pull llama3.2')">copy</button>
+              </div>
+            </div>
+            <div class="mini-step">
+              <div class="mini-step-num">STEP 03</div>
+              <div class="mini-step-title">That's it!</div>
+              <div class="mini-step-desc">Ollama runs in the background. The green dot in the top-right confirms it's connected.</div>
+              <div class="code-block" style="margin-top:8px;">
+                <span>ollama serve</span>
+                <button class="copy-btn" onclick="copyText('ollama serve')">copy</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="model-row">
+            <div class="form-group" style="margin:0;flex:1;max-width:280px;">
+              <label>Active Model</label>
+              <input type="text" id="settingsModel" placeholder="llama3.2"/>
+            </div>
+            <div class="form-group" style="margin:0;flex:1;max-width:280px;">
+              <label>Ollama URL</label>
+              <input type="text" id="settingsOllamaUrl" placeholder="http://localhost:11434"/>
+            </div>
+            <button class="btn btn-accent" onclick="saveSettings()" style="margin-top:18px;">Save</button>
+            <button class="btn btn-outline" onclick="checkOllama()" style="margin-top:18px;">Test Connection</button>
+          </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="card" style="margin-bottom:20px;max-width:560px;">
+          <div class="section-label" style="margin-bottom:14px;">// your profile</div>
+          <div class="form-row">
+            <div class="form-group"><label>Your Name / Company</label><input type="text" id="settingsName" placeholder="e.g. Arjun Shah / UrbanThread"/></div>
+            <div class="form-group"><label>Your Gmail address</label><input type="text" id="settingsEmail" placeholder="you@gmail.com"/></div>
+          </div>
+          <button class="btn btn-accent btn-sm" onclick="saveSettings()">Save Profile</button>
+        </div>
+
+        <!-- DATA -->
+        <div class="card" style="max-width:560px;">
+          <div class="section-label" style="margin-bottom:14px;">// data management</div>
+          <p style="font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.6;">All your vendor data lives in your browser's local storage. Export a backup anytime or clear everything to start fresh.</p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-ghost btn-sm" onclick="exportData()">↓ Export JSON</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAll()">✕ Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL: Add Vendor -->
+<div class="modal-overlay" id="addVendorModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Add Vendor</h2>
+      <button class="modal-close" onclick="closeModal('addVendorModal')">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Vendor Name *</label><input type="text" id="avName" placeholder="Sunrise Textiles Ltd."/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="avEmail" placeholder="contact@vendor.com"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label><input type="text" id="avCat" placeholder="T-shirts, Sneakers…"/></div>
+      <div class="form-group"><label>Location</label><input type="text" id="avLoc" placeholder="Tirupur, India"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>MOQ (units)</label><input type="number" id="avMOQ" placeholder="50"/></div>
+      <div class="form-group"><label>Brand</label><select id="avBrand"><option value="">— None —</option></select></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="avNotes" rows="2" placeholder="Anything useful — pricing, lead time, referrals…" style="resize:vertical;"></textarea></div>
+    <div class="form-group"><label>Status</label>
+      <select id="avStatus">
+        <option value="new">New</option>
+        <option value="shortlisted">Shortlisted</option>
+        <option value="contacted">Contacted</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addVendorModal')">Cancel</button>
+      <button class="btn btn-accent" onclick="saveVendor()">Save Vendor</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Email -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal" style="width:620px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Outreach Email</h2>
+      <button class="modal-close" onclick="closeModal('emailModal')">✕</button>
+    </div>
+    <div id="emailModalContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('emailModal')">Close</button>
+      <button class="btn btn-outline" onclick="copyEmailDraft()">⎘ Copy</button>
+      <button class="btn btn-accent" onclick="openInGmail()">✉ Open Gmail</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Add Brand -->
+<div class="modal-overlay" id="addBrandModal">
+  <div class="modal" style="width:420px;">
+    <div class="modal-header">
+      <h2 class="modal-title">New Brand</h2>
+      <button class="modal-close" onclick="closeModal('addBrandModal')">✕</button>
+    </div>
+    <div class="form-group"><label>Brand Name *</label><input type="text" id="brandName" placeholder="e.g. UrbanThread"/></div>
+    <div class="form-group"><label>Product Type</label><input type="text" id="brandProduct" placeholder="e.g. premium streetwear t-shirts"/></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addBrandModal')">Cancel</button>
+      <button class="btn btn-accent" onclick="saveBrand()">Create Brand</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// STATE & PERSISTENCE
+// ═══════════════════════════════════════
+let state = {
+  vendors: [],
+  brands: [],
+  settings: {
+    name: '',
+    email: '',
+    ollamaUrl: 'http://localhost:11434',
+    model: 'llama3.2'
+  }
+};
+
+let currentDraft = { to: '', subject: '', body: '' };
+let editingVendorId = null;
+
+function save() { localStorage.setItem('vf2_state', JSON.stringify(state)); }
+
+function load() {
+  try {
+    const raw = localStorage.getItem('vf2_state');
+    if (raw) state = { ...state, ...JSON.parse(raw) };
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+load();
+loadSettingsForm();
+renderAll();
+checkOllama();
+
+function renderAll() {
+  renderBrandSidebar();
+  renderHeroStats();
+  renderRecentVendors();
+  renderVendorTable();
+  renderShortlist();
+  refreshAllSelects();
+}
+
+// ═══════════════════════════════════════
+// OLLAMA CONNECTION
+// ═══════════════════════════════════════
+async function checkOllama() {
+  const dot = document.getElementById('ollamaDot');
+  const txt = document.getElementById('ollamaStatusText');
+  txt.textContent = 'checking…';
+  dot.className = 'status-dot';
+
+  try {
+    const url = (state.settings.ollamaUrl || 'http://localhost:11434').replace(/\/$/, '');
+    const r = await fetch(url + '/api/tags', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      dot.className = 'status-dot online';
+      const data = await r.json();
+      const models = (data.models || []).map(m => m.name.split(':')[0]);
+      txt.textContent = models.length ? `ollama · ${models[0]}` : 'ollama connected';
+      return true;
+    }
+  } catch(e) {}
+
+  dot.className = 'status-dot offline';
+  txt.textContent = 'ollama offline';
+  return false;
+}
+
+async function ollamaChat(prompt) {
+  const url = (state.settings.ollamaUrl || 'http://localhost:11434').replace(/\/$/, '');
+  const model = state.settings.model || 'llama3.2';
+
+  const r = await fetch(url + '/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, prompt, stream: false })
+  });
+
+  if (!r.ok) throw new Error(`Ollama error: ${r.status}`);
+  const data = await r.json();
+  return data.response || '';
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const map = { dashboard: 'Home', discover: 'Discover', vendors: 'All Vendors', shortlist: 'Shortlist', settings: 'Settings' };
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.trim() === map[id]) n.classList.add('active');
+  });
+}
+
+// ═══════════════════════════════════════
+// BRANDS
+// ═══════════════════════════════════════
+function renderBrandSidebar() {
+  const el = document.getElementById('brandList');
+  if (!state.brands.length) {
+    el.innerHTML = `<div style="padding:6px 16px;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;">no brands yet</div>`;
+    return;
+  }
+  el.innerHTML = state.brands.map(b => {
+    const count = state.vendors.filter(v => v.brand === b.id).length;
+    const initials = b.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="brand-item">
+      <div class="brand-avatar">${initials}</div>
+      <span class="brand-name">${b.name}</span>
+      <span class="brand-count">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+function saveBrand() {
+  const name = document.getElementById('brandName').value.trim();
+  if (!name) return toast('Enter a brand name');
+  state.brands.push({ id: uid(), name, product: document.getElementById('brandProduct').value.trim() });
+  save();
+  closeModal('addBrandModal');
+  renderAll();
+  toast(`Brand "${name}" created ✓`);
+}
+
+// ═══════════════════════════════════════
+// HERO STATS
+// ═══════════════════════════════════════
+function renderHeroStats() {
+  const el = document.getElementById('heroStats');
+  const stats = [
+    [state.vendors.length, 'total vendors'],
+    [state.vendors.filter(v => v.status === 'shortlisted').length, 'shortlisted'],
+    [state.vendors.filter(v => v.status === 'contacted').length, 'contacted'],
+    [state.brands.length, 'brands tracked'],
+  ];
+  el.innerHTML = stats.map(([n, l]) => `
+    <div class="hero-stat">
+      <div class="hero-stat-num">${n}</div>
+      <div class="hero-stat-label">${l}</div>
+    </div>`).join('');
+}
+
+function renderRecentVendors() {
+  const el = document.getElementById('recentVendors');
+  const recent = [...state.vendors].reverse().slice(0, 5);
+  if (!recent.length) {
+    el.innerHTML = `<div class="empty" style="padding:40px 0;">
+      <div class="empty-glyph" style="font-size:36px;">◈</div>
+      <h3>No vendors yet</h3>
+      <p>Hit "Find Vendors Now" to start building your sourcing pipeline.</p>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="card" style="padding:0;overflow:hidden;">
+    <table>
+      <thead><tr><th>Vendor</th><th>Category</th><th>MOQ</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${recent.map(v => `
+        <tr>
+          <td><div class="vendor-name-cell">${v.name}</div><div class="vendor-email-cell">${v.email||'—'}</div></td>
+          <td><span class="badge badge-blue">${v.category||'—'}</span></td>
+          <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);">${v.moq ? v.moq+' pcs' : '—'}</td>
+          <td>${statusBadge(v.status)}</td>
+          <td><div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" onclick="draftEmail('${v.id}')">✉ Draft</button>
+          </div></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ═══════════════════════════════════════
+// VENDOR TABLE
+// ═══════════════════════════════════════
+function renderVendorTable() {
+  const search = (document.getElementById('vendorSearch')?.value || '').toLowerCase();
+  const statusF = document.getElementById('statusFilter')?.value || '';
+  const catF = document.getElementById('catFilter')?.value || '';
+
+  const vendors = state.vendors.filter(v => {
+    if (search && !`${v.name} ${v.email} ${v.category} ${v.location}`.toLowerCase().includes(search)) return false;
+    if (statusF && v.status !== statusF) return false;
+    if (catF && v.category !== catF) return false;
+    return true;
+  });
+
+  document.getElementById('vendorCountSub').textContent = `// ${state.vendors.length} vendors in your pipeline`;
+
+  const tbody = document.getElementById('vendorTableBody');
+  const empty = document.getElementById('vendorTableEmpty');
+
+  if (!vendors.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = vendors.map(v => {
+    const brand = state.brands.find(b => b.id === v.brand);
+    return `<tr class="${v.status==='shortlisted'?'shortlisted':''}">
+      <td><div class="vendor-name-cell">${v.name}</div><div class="vendor-email-cell">${v.email||'—'}</div></td>
+      <td><span class="badge badge-blue">${v.category||'—'}</span></td>
+      <td style="font-size:12px;color:var(--text3);">${v.location||'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);">${v.moq ? v.moq+' pcs' : '—'}</td>
+      <td>${statusBadge(v.status)}</td>
+      <td style="font-size:12px;color:var(--text2);">${brand ? brand.name : '—'}</td>
+      <td>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-ghost btn-sm" onclick="draftEmail('${v.id}')">✉</button>
+          <select style="font-size:11px;padding:5px 8px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:'JetBrains Mono',monospace;" onchange="changeStatus('${v.id}',this.value)">
+            <option value="new" ${v.status==='new'?'selected':''}>new</option>
+            <option value="shortlisted" ${v.status==='shortlisted'?'selected':''}>shortlisted</option>
+            <option value="contacted" ${v.status==='contacted'?'selected':''}>contacted</option>
+            <option value="rejected" ${v.status==='rejected'?'selected':''}>rejected</option>
+          </select>
+          <button class="btn btn-danger btn-sm" onclick="deleteVendor('${v.id}')" title="Delete">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // update cat filter
+  const cats = [...new Set(state.vendors.map(v => v.category).filter(Boolean))];
+  const cf = document.getElementById('catFilter');
+  if (cf) { const cur = cf.value; cf.innerHTML = `<option value="">All Categories</option>` + cats.map(c => `<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join(''); cf.value = cur; }
+}
+
+// ═══════════════════════════════════════
+// SHORTLIST
+// ═══════════════════════════════════════
+function renderShortlist() {
+  const cat = document.getElementById('slCat')?.value || '';
+  const loc = (document.getElementById('slLoc')?.value || '').toLowerCase();
+  const moqMin = parseInt(document.getElementById('slMOQMin')?.value) || 0;
+  const moqMax = parseInt(document.getElementById('slMOQMax')?.value) || Infinity;
+  const brand = document.getElementById('slBrand')?.value || '';
+
+  const vendors = state.vendors.filter(v => {
+    if (cat && v.category !== cat) return false;
+    if (loc && !(v.location||'').toLowerCase().includes(loc)) return false;
+    if (v.moq && (v.moq < moqMin || v.moq > moqMax)) return false;
+    if (brand && v.brand !== brand) return false;
+    return true;
+  });
+
+  const el = document.getElementById('shortlistResults');
+  if (!vendors.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-glyph">★</div><h3>No matches</h3><p>Adjust your filters or add more vendors.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = vendors.map(v => {
+    const b = state.brands.find(br => br.id === v.brand);
+    return `<div class="result-card">
+      <div style="flex:1;">
+        <div class="result-name">${v.name}</div>
+        <div class="result-meta">${[v.category, v.location, v.moq ? v.moq+' pcs MOQ' : ''].filter(Boolean).join(' · ')}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+        ${statusBadge(v.status)}
+        ${b ? `<span class="badge badge-accent">${b.name}</span>` : ''}
+        <button class="btn btn-accent btn-sm" onclick="draftEmail('${v.id}')">✉ Draft Email</button>
+        <select style="font-size:11px;padding:5px 8px;background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:'JetBrains Mono',monospace;" onchange="changeStatus('${v.id}',this.value)">
+          <option value="new" ${v.status==='new'?'selected':''}>new</option>
+          <option value="shortlisted" ${v.status==='shortlisted'?'selected':''}>shortlisted</option>
+          <option value="contacted" ${v.status==='contacted'?'selected':''}>contacted</option>
+          <option value="rejected" ${v.status==='rejected'?'selected':''}>rejected</option>
+        </select>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// DISCOVER VENDORS (Ollama)
+// ═══════════════════════════════════════
+async function discoverVendors() {
+  const product = document.getElementById('discProduct').value.trim();
+  const location = document.getElementById('discLocation').value.trim();
+  const moq = document.getElementById('discMOQ').value.trim();
+
+  if (!product) return toast('Enter a product type to search');
+
+  const btn = document.getElementById('discBtn');
+  const inner = document.getElementById('discBtnInner');
+  btn.disabled = true;
+  inner.innerHTML = `<span class="spinner"></span> Thinking…`;
+
+  const resultsEl = document.getElementById('discResults');
+  resultsEl.innerHTML = `<div class="ai-loading">
+    <span class="spinner spinner-light"></span>
+    AI is researching ${product} vendors${location ? ' in '+location : ''}…
+  </div>`;
+
+  const prompt = `You are a business sourcing expert. Generate a list of 6 realistic manufacturer/vendor companies that produce ${product}${location ? ` in ${location}` : ''}.
+
+Return ONLY a JSON array with no markdown, no explanation, no backticks. Each object must have exactly these fields:
+- name: company name (string)
+- email: plausible contact email like info@companyname.com (string)
+- location: city and country (string)
+- moq: minimum order quantity as a number${moq ? `, preferably under ${moq}` : ''} (number or null)
+- website: plausible website URL (string or null)
+- notes: one sentence describing what makes them notable (string)
+
+Example format:
+[{"name":"Sunrise Textiles","email":"sales@sunrisetextiles.com","location":"Tirupur, India","moq":50,"website":"sunrisetextiles.com","notes":"Specialises in heavyweight cotton blanks with fast turnaround."}]
+
+Return the JSON array now:`;
+
+  try {
+    const raw = await ollamaChat(prompt);
+    let vendors = [];
+
+    try {
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (match) vendors = JSON.parse(match[0]);
+    } catch(e) {
+      throw new Error('AI returned unexpected format. Try again.');
+    }
+
+    if (!vendors.length) throw new Error('No vendors found — try different terms');
+
+    const brandId = document.getElementById('discBrand').value || null;
+    const category = product;
+
+    resultsEl.innerHTML = `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);margin-bottom:14px;">
+      // found ${vendors.length} vendors · click + Add to track them
+    </div>` + vendors.map((v, i) => `
+      <div class="result-card" id="rc-${i}" style="animation-delay:${i*0.05}s;">
+        <div style="flex:1;">
+          <div class="result-name">${v.name||'Unknown'}</div>
+          <div class="result-meta">${[v.location, v.moq ? 'MOQ '+v.moq+' pcs' : ''].filter(Boolean).join(' · ')}</div>
+          <div class="result-note">${v.notes||''}</div>
+          ${v.website ? `<div style="margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);">${v.website}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);">${v.email||'—'}</span>
+          <button class="btn btn-accent btn-sm" id="add-btn-${i}" onclick='addDiscovered(${i}, ${JSON.stringify(v).replace(/'/g,"&#39;")}, "${category}", "${brandId||''}")'>+ Add</button>
+        </div>
+      </div>`).join('');
+
+  } catch(err) {
+    if (err.message.includes('fetch') || err.message.includes('Failed')) {
+      resultsEl.innerHTML = `<div class="ollama-banner" style="border-left-color:var(--red);">
+        <h2 style="font-size:18px;">Ollama is not running</h2>
+        <p>Start Ollama first, then try again. Go to <strong style="color:var(--accent)">Settings</strong> to set it up — it's free and takes 2 minutes.</p>
+        <button class="btn btn-accent btn-sm" onclick="showPage('settings')">⚙ Setup Ollama</button>
+      </div>`;
+    } else {
+      resultsEl.innerHTML = `<div class="card" style="border-color:var(--red);background:var(--red-bg);color:var(--red);">${err.message}</div>`;
+    }
+  }
+
+  btn.disabled = false;
+  inner.textContent = '⊕ Search';
+}
+
+function addDiscovered(idx, v, category, brandId) {
+  const vendor = {
+    id: uid(),
+    name: v.name || 'Unknown',
+    email: v.email || '',
+    category,
+    location: v.location || '',
+    moq: v.moq || null,
+    notes: v.notes || '',
+    website: v.website || '',
+    status: 'new',
+    brand: brandId || null,
+    addedAt: new Date().toISOString()
+  };
+  state.vendors.push(vendor);
+  save();
+  renderBrandSidebar();
+  renderHeroStats();
+  toast(`${vendor.name} added ✓`);
+
+  const btn = document.getElementById(`add-btn-${idx}`);
+  const card = document.getElementById(`rc-${idx}`);
+  if (btn) { btn.textContent = '✓ Added'; btn.disabled = true; btn.style.background = 'var(--green)'; btn.style.color = '#0a0a0a'; }
+  if (card) card.classList.add('added');
+}
+
+// ═══════════════════════════════════════
+// EMAIL DRAFTING (Ollama)
+// ═══════════════════════════════════════
+async function draftEmail(vendorId) {
+  const vendor = state.vendors.find(v => v.id === vendorId);
+  if (!vendor) return;
+
+  const brand = state.brands.find(b => b.id === vendor.brand);
+  const el = document.getElementById('emailModalContent');
+  el.innerHTML = `<div class="ai-loading"><span class="spinner spinner-light"></span> Writing your email…</div>`;
+  openModal('emailModal');
+
+  const prompt = `Write a professional vendor outreach email.
+
+Sender: ${state.settings.name || 'a founder'} (${state.settings.email || 'founder@brand.com'})
+${brand ? `Brand: ${brand.name} — ${brand.product || ''}` : ''}
+Recipient: ${vendor.name}, a ${vendor.category || 'product'} manufacturer${vendor.location ? ' in '+vendor.location : ''}
+${vendor.moq ? `Their MOQ: ${vendor.moq} units` : ''}
+
+The email should:
+1. Briefly introduce who we are and our brand
+2. Show genuine interest in their product/manufacturing
+3. Ask about MOQ, pricing per unit, lead time, and sample availability
+4. End with a clear call to action (reply or schedule a call)
+
+Tone: warm, professional, founder-to-manufacturer. Keep it under 200 words.
+
+Respond ONLY with a JSON object like this (no markdown, no backticks):
+{"subject": "...", "body": "..."}`;
+
+  try {
+    const raw = await ollamaChat(prompt);
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Could not parse email from AI');
+    const parsed = JSON.parse(match[0]);
+
+    currentDraft = { to: vendor.email || '', subject: parsed.subject, body: parsed.body };
+
+    el.innerHTML = `
+      <div class="email-subject-line"><strong>To:</strong> ${vendor.email || '(no email on file)'}</div>
+      <div class="email-subject-line"><strong>Subject:</strong> ${parsed.subject}</div>
+      <div style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <label style="margin:0;">Email body</label>
+          <button class="btn btn-ghost btn-sm" onclick="toggleEmailEdit()">Edit</button>
+        </div>
+        <div id="emailDisplay" class="email-preview">${parsed.body}</div>
+        <textarea id="emailEdit" style="display:none;min-height:200px;resize:vertical;" class="email-preview">${parsed.body}</textarea>
+      </div>`;
+
+  } catch(err) {
+    el.innerHTML = `<div class="card" style="border-color:var(--red);background:var(--red-bg);">
+      <p style="color:var(--red);font-weight:600;margin-bottom:6px;">Error</p>
+      <p style="font-size:13px;color:var(--text2);">${err.message.includes('fetch') ? 'Ollama is not running. Start it and try again.' : err.message}</p>
+      <button class="btn btn-accent btn-sm" style="margin-top:12px;" onclick="showPage('settings');closeModal('emailModal')">⚙ Setup Ollama</button>
+    </div>`;
+  }
+}
+
+function toggleEmailEdit() {
+  const d = document.getElementById('emailDisplay');
+  const e = document.getElementById('emailEdit');
+  if (!d || !e) return;
+  if (d.style.display === 'none') {
+    currentDraft.body = e.value;
+    d.textContent = e.value;
+    d.style.display = '';
+    e.style.display = 'none';
+  } else {
+    e.value = currentDraft.body;
+    d.style.display = 'none';
+    e.style.display = 'block';
+  }
+}
+
+function copyEmailDraft() {
+  const e = document.getElementById('emailEdit');
+  if (e && e.style.display !== 'none') currentDraft.body = e.value;
+  navigator.clipboard.writeText(`Subject: ${currentDraft.subject}\n\n${currentDraft.body}`);
+  toast('Copied to clipboard ✓');
+}
+
+function openInGmail() {
+  const e = document.getElementById('emailEdit');
+  if (e && e.style.display !== 'none') currentDraft.body = e.value;
+  const url = `https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(currentDraft.to)}&su=${encodeURIComponent(currentDraft.subject)}&body=${encodeURIComponent(currentDraft.body)}`;
+  window.open(url, '_blank');
+  closeModal('emailModal');
+  toast('Opened Gmail compose ✓');
+}
+
+async function bulkEmail() {
+  const shortlisted = state.vendors.filter(v => v.status === 'shortlisted');
+  if (!shortlisted.length) return toast('Mark some vendors as Shortlisted first');
+  for (const v of shortlisted) {
+    await draftEmail(v.id);
+    await new Promise(r => setTimeout(r, 400));
+  }
+}
+
+// ═══════════════════════════════════════
+// VENDOR CRUD
+// ═══════════════════════════════════════
+function openAddVendorModal(prefill = {}) {
+  editingVendorId = prefill.id || null;
+  ['avName','avEmail','avCat','avLoc','avNotes'].forEach(id => {
+    const field = id.replace('av','').toLowerCase();
+    document.getElementById(id).value = prefill[field === 'cat' ? 'category' : field === 'loc' ? 'location' : field] || '';
+  });
+  document.getElementById('avMOQ').value = prefill.moq || '';
+  document.getElementById('avStatus').value = prefill.status || 'new';
+  refreshAllSelects();
+  document.getElementById('avBrand').value = prefill.brand || '';
+  openModal('addVendorModal');
+}
+
+function saveVendor() {
+  const name = document.getElementById('avName').value.trim();
+  if (!name) return toast('Vendor name is required');
+
+  const vendor = {
+    id: editingVendorId || uid(),
+    name,
+    email: document.getElementById('avEmail').value.trim(),
+    category: document.getElementById('avCat').value.trim(),
+    location: document.getElementById('avLoc').value.trim(),
+    moq: parseInt(document.getElementById('avMOQ').value) || null,
+    notes: document.getElementById('avNotes').value.trim(),
+    status: document.getElementById('avStatus').value,
+    brand: document.getElementById('avBrand').value || null,
+    addedAt: new Date().toISOString()
+  };
+
+  if (editingVendorId) {
+    const i = state.vendors.findIndex(v => v.id === editingVendorId);
+    if (i !== -1) state.vendors[i] = vendor;
+  } else {
+    state.vendors.push(vendor);
+  }
+
+  save();
+  closeModal('addVendorModal');
+  renderAll();
+  toast(`Vendor "${name}" saved ✓`);
+}
+
+function changeStatus(id, status) {
+  const v = state.vendors.find(v => v.id === id);
+  if (v) { v.status = status; save(); renderAll(); }
+}
+
+function deleteVendor(id) {
+  if (!confirm('Delete this vendor?')) return;
+  state.vendors = state.vendors.filter(v => v.id !== id);
+  save(); renderAll(); toast('Vendor deleted');
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function loadSettingsForm() {
+  document.getElementById('settingsName').value = state.settings.name || '';
+  document.getElementById('settingsEmail').value = state.settings.email || '';
+  document.getElementById('settingsModel').value = state.settings.model || 'llama3.2';
+  document.getElementById('settingsOllamaUrl').value = state.settings.ollamaUrl || 'http://localhost:11434';
+}
+
+function saveSettings() {
+  state.settings.name = document.getElementById('settingsName').value.trim();
+  state.settings.email = document.getElementById('settingsEmail').value.trim();
+  state.settings.model = document.getElementById('settingsModel').value.trim() || 'llama3.2';
+  state.settings.ollamaUrl = document.getElementById('settingsOllamaUrl').value.trim() || 'http://localhost:11434';
+  save();
+  checkOllama();
+  toast('Settings saved ✓');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'vendorforge-backup.json';
+  a.click();
+  toast('Exported ✓');
+}
+
+function clearAll() {
+  if (!confirm('Delete ALL vendors, brands and settings?')) return;
+  localStorage.removeItem('vf2_state');
+  state = { vendors: [], brands: [], settings: { name: '', email: '', ollamaUrl: 'http://localhost:11434', model: 'llama3.2' } };
+  renderAll(); loadSettingsForm(); checkOllama();
+  toast('All data cleared');
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function statusBadge(s) {
+  const map = { new: 'badge-gray', shortlisted: 'badge-orange', contacted: 'badge-green', rejected: 'badge-red' };
+  return `<span class="badge ${map[s]||'badge-gray'}">${s||'new'}</span>`;
+}
+
+function refreshAllSelects() {
+  const brandOpts = `<option value="">— None —</option>` + state.brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+  ['avBrand','discBrand'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = id === 'discBrand' ? `<option value="">— No brand —</option>${state.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('')}` : brandOpts;
+    el.value = cur;
+  });
+
+  const cats = [...new Set(state.vendors.map(v => v.category).filter(Boolean))];
+  ['slCat'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = `<option value="">All</option>` + cats.map(c => `<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
+    el.value = cur;
+  });
+
+  const slBrand = document.getElementById('slBrand');
+  if (slBrand) { const cur = slBrand.value; slBrand.innerHTML = `<option value="">All brands</option>${state.brands.map(b=>`<option value="${b.id}">${b.name}</option>`).join('')}`; slBrand.value = cur; }
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function uid() { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+function copyText(text) {
+  navigator.clipboard.writeText(text);
+  toast('Copied ✓');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
